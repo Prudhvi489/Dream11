@@ -1,6 +1,9 @@
 const express = require('express');
 const { DB_USER, DB_PWD, DB_URL } = require('./config/config');
+const fs = require('fs');
+const playerslistdata = require('./data/players.json')
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const router = require('./routes')
 const app = express();
 const port = 8081;
 
@@ -24,11 +27,21 @@ let db;
 async function run() {
   try {
     await client.connect();
-    console.log("entering")
     await client.db("admin").command({ ping: 1 });
 
-    db = client.db(DB_NAME);
-    
+    db = client.db(DB_NAME); 
+
+  // Get the collection
+  // const collection = db.collection('playerslist');
+console.log(playerslistdata.length,"Data")
+  // Insert players json into MongoDB
+  // collection.insertMany(playerslistdata, function(err, result) {
+  //   if (err) {
+  //     console.error('Error inserting data:', err);
+  //   } else {
+  //     console.log('Inserted documents into the collection');
+  //   }
+  // });
     console.log("You successfully connected to MongoDB!");
     
   }
@@ -48,7 +61,6 @@ async function sampleCreate() {
   };
   const demo_create = await db.collection(DB_COLLECTION_NAME).insertOne(demo_doc);
   
-  console.log("Added!")
   console.log(demo_create.insertedId);
 }
 
@@ -59,12 +71,11 @@ app.get('/', async (req, res) => {
   res.send('Hello World!');
 });
 
-app.get('/demo', async (req, res) => {
-  await sampleCreate();
-  res.send({status: 1, message: "demo"});
-});
 
-//
+/**
+ * Major routing from routes folder
+ */
+app.use('/',router);
 
 app.listen(port, () => {
   console.log(`App listening on port ${port}`);
