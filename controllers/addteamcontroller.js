@@ -8,6 +8,7 @@ const addteamcontroller ={
      */
     addteammembers:async(req,res)=>{
         try{
+            console.log(req?.body,"asds")
             const {body} = req;
             const addres =  await addteamservice.addteammembers(body);
             res.json({statu:1,data:{

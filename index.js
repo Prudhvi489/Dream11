@@ -1,6 +1,7 @@
 const express = require('express');
 const { DB_USER, DB_PWD, DB_URL } = require('./config/config');
 const fs = require('fs');
+const bodyParser = require('body-parser');
 const playerslistdata = require('./data/players.json')
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const router = require('./routes')
@@ -64,7 +65,8 @@ async function sampleCreate() {
   console.log(demo_create.insertedId);
 }
 
-
+// Middleware to parse JSON body
+app.use(bodyParser.json());
 // Endpoints
 
 app.get('/', async (req, res) => {
