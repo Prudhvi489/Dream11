@@ -94,13 +94,11 @@ const addteamservice = {
       const registered_team = {
         TeamName: teamname,
         Players: teamsmember_res.playersObj,
-        Captain: teamsmember_res.captainObj._id,
-        ViceCaptain: teamsmember_res.viceCaptainObj._id,
+        Captain:{id: teamsmember_res.captainObj._id,Player:teamsmember_res.captainObj.Player,Role:teamsmember_res.captainObj.Role,type:"captain"},
+        ViceCaptain: {id:teamsmember_res.viceCaptainObj._id,Player:teamsmember_res.viceCaptainObj.Player,Role:teamsmember_res.viceCaptainObj.Role,type:"vicecaptain"},
       };
-      console.log("ksjdhf")
       // Check if the team name already exists in the collection
         const existingTeam =await db.collection("teams").findOne({ TeamName: teamname });
-        console.log(existingTeam,"team")
         if(existingTeam){
             return {
                 statu: 0,
