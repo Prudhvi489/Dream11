@@ -212,7 +212,7 @@ const matches_score_analysis = async ({
 
         if(ballnumber === 6 && mainmatch_obj[otherinnings_key].bowlers_inover===1){
             mainmatch_obj[otherinnings_key][bowler].Maidenbonus+=12;
-            mainmatch_obj[otherinnings_key][bowler].score += 12;//maiden bonus
+            mainmatch_obj[otherinnings_key][bowler].playerscore += 12;//maiden bonus
         }
         else if(ballnumber === 6 && mainmatch_obj[otherinnings_key].bowlers_inover===2){
             mainmatch_obj[otherinnings_key].overscore =0;
@@ -244,12 +244,12 @@ const matches_score_analysis = async ({
     mainmatch_obj[otherinnings_key][bowler].bowlingscore += bowlingpoints;
   }
   /**Adding 2x runs for captain and 1.5 runs for vice-captain */
-  battingruns = playerobj.type === "captain" ? battingruns*2:playerobj.type === "vicecaptain" ? battingruns*1.5:battingruns;
   let total_team_score = battingruns + bowlingpoints + fieldingpoints;
+//   total_team_score = playerobj.type === "captain" ? total_team_score*2:playerobj.type === "vicecaptain" ? total_team_score*1.5:total_team_score;
   mainmatch_obj[inningskey][playerobj.Player].battingscore += battingruns;
   mainmatch_obj[inningskey][playerobj.Player].ballsplayed.push(scoreobj);
   mainmatch_obj[inningskey][playerobj.Player].playerscore += total_team_score
-  mainmatch_obj[inningskey].total += total_team_score;
+//   mainmatch_obj[inningskey].total += total_team_score;
   return mainmatch_obj
 };
 
