@@ -11,6 +11,7 @@ const addteamservice = {
      */
   addteammembers: async (payload) => {
     try {
+      console.log("dajkfsdf")
       const { teamname, players, vicecaptain, captain } = payload;
       let all_players = [...players, vicecaptain, captain];
       /**Maximum players check */
@@ -96,6 +97,7 @@ const addteamservice = {
         Captain: teamsmember_res.captainObj._id,
         ViceCaptain: teamsmember_res.viceCaptainObj._id,
       };
+      console.log("ksjdhf")
       // Check if the team name already exists in the collection
         const existingTeam =await db.collection("teams").findOne({ TeamName: teamname });
         console.log(existingTeam,"team")
