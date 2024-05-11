@@ -2,7 +2,6 @@ const Joi = require("joi");
 const responseHandlers = require("../responseHandler");
 const validationMessage = {
   "any.required": `The field {#label} is required.`,
-  // "string.empty": `The field {#label} is not allowed to be empty`,
   "string.base": `The field {#label} datatype wrong`,
   "number.base": `The field {#label} must be a number`,
   "number.integer": `The field {#label} must be an integer`,

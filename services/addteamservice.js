@@ -155,6 +155,7 @@ const addteamservice = {
       };
     } catch (err) {
       console.log(err);
+      return -1;
     }
   },
 };

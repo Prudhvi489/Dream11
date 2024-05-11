@@ -93,14 +93,13 @@ const resultsservice = {
             // Do something if the player is not present
           }
         } catch (err) {
-          return {status:0,message:"Error while processing results",data:{}}
+          return -1
         }
       }
       let current_date = new Date();
       let formate_date = `${current_date.getDate()}/${
         current_date.getMonth() + 1
       }/${current_date.getFullYear()}`;
-      console.log(`${match_res.match}_${formate_date}`, "key");
       let unique_key = `${match_res.match}_${formate_date}`;
       // Assuming match_res is your document and match_res.match is the key you want to use as the _id field
       let filter = { _id: unique_key };
@@ -113,7 +112,7 @@ const resultsservice = {
         .updateOne(filter, { $set: replacement }, options);
       return { status: 1, message: "Results processed succesfully", data: {} };
     } catch (err) {
-      return {status:0,message:"Error while processing results",data:{}}
+      return -1;
     }
   },
   /**retrieveing the processed results */
@@ -121,12 +120,11 @@ const resultsservice = {
     try {
       let db = await connectdb();
       let allResults = await db.collection("matchresults").find({}).toArray();
-      // console.log(allResults);
       let display_results = await display_match_results(allResults)
       return { status: 1, message: "Results fetched succesfully", data: display_results };
 
     } catch (err) {
-      return {status:0,message:"Error in retrieving results",data:{}}
+      return -1
     }
   },
 };
