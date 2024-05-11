@@ -1,5 +1,5 @@
 const {addteamservice} = require('../services/addteamservice')
-
+const responseHandlers = require('../utils/responseHandler')
 const addteamcontroller ={
     /**
      * Adding teammembers to the game 
@@ -10,10 +10,10 @@ const addteamcontroller ={
         try{
             const {body} = req;
             const addres =  await addteamservice.addteammembers(body);
-            // res.json({statu:1,data:{
-            //     val:"succress"
-            // }})
+           
+            const {message,data={}} = addres
             res.json(addres)
+            // return responseHandlers.success(res,message,data)
         }
         catch(err){
             console.log(err)

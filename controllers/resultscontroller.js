@@ -11,12 +11,11 @@ const resultscontroller = {
     },
     getmatchresults:async(req,res)=>{
         try{
-            res.json({statu:1,data:{
-                val:"succress"
-            }})
+            const match_result = await resultsservice.getmatchresults();
+            res.json(match_result)
         }
         catch(err){
-
+            
         }
     }
 

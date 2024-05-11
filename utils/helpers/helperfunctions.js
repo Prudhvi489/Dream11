@@ -34,7 +34,12 @@ const add_teammembers_helper = async (players, captain, vicecaptain) => {
     (obj) => obj !== captainObj && obj !== viceCaptainObj
   );
   const playerIds = updatedPlayers.map((item) => {
-    return { id: item._id, Player: item?.Player, Role: item.Role,type:"player" };
+    return {
+      id: item._id,
+      Player: item?.Player,
+      Role: item.Role,
+      type: "player",
+    };
   });
 
   return { captainObj, viceCaptainObj, playersObj: playerIds };
@@ -62,6 +67,7 @@ function checkMaxPlayersPerTeam(players) {
   return exceededTeams;
 }
 
+
 const matches_score_analysis = async ({
   matchobj,
   scoreobj,
@@ -77,12 +83,14 @@ const matches_score_analysis = async ({
     fielders_involved,
     kind,
     bowler,
-    ballnumber
+    ballnumber,
+    BattingTeam,
   } = scoreobj;
   let otherinnings_key =
     inningskey === "Firstinnings" ? "Secondinnings" : "Firstinnings";
-  if (!mainmatch_obj[inningskey].hasOwnProperty(playerobj.Player)) {
-    mainmatch_obj[inningskey][playerobj.Player] = {
+  mainmatch_obj[inningskey].teamname = scoreobj?.BattingTeam;
+  if (!mainmatch_obj[inningskey].playersscores.hasOwnProperty(playerobj.Player)) {
+    mainmatch_obj[inningskey].playersscores[playerobj.Player] = {
       id: playerobj?.id,
       battingscore: 0,
       fieldingscore: 0,
@@ -93,53 +101,53 @@ const matches_score_analysis = async ({
       runsbonus: 0,
       wickets: 0,
       caughts: 0,
-      Maidenbonus:0,
-      playerscore:0
+      Maidenbonus: 0,
+      playerscore: 0,
     };
-  } 
-//   else if (isWicketDelivery) {
-    if (fielders_involved !== "NA") {
-      if (!mainmatch_obj[otherinnings_key].hasOwnProperty(fielders_involved)) {
-        mainmatch_obj[otherinnings_key][fielders_involved] = {
-          id: "",
-          battingscore: 0,
-          fieldingscore: 0,
-          bowlingscore: 0,
-          ballsplayed: [],
-          centurybonus: 0,
-          halfcenturybonus: 0,
-          runsbonus: 0,
-          wickets: 0,
-          caughts: 0,
-          Maidenbonus:0,
-          playerscore:0
-        };
-      }
-    } else {
-      if (!mainmatch_obj[otherinnings_key].hasOwnProperty(bowler)) {
-        mainmatch_obj[otherinnings_key][bowler] = {
-          id: "",
-          battingscore: 0,
-          fieldingscore: 0,
-          bowlingscore: 0,
-          ballsplayed: [],
-          centurybonus: 0,
-          halfcenturybonus: 0,
-          runsbonus: 0,
-          wickets: 0,
-          caughts: 0,
-          Maidenbonus:0,
-          playerscore:0
-        };
-      }
+  }
+  //   else if (isWicketDelivery) {
+  if (fielders_involved !== "NA") {
+    if (!mainmatch_obj[otherinnings_key].playersscores.hasOwnProperty(fielders_involved)) {
+      mainmatch_obj[otherinnings_key].playersscores[fielders_involved] = {
+        id: "",
+        battingscore: 0,
+        fieldingscore: 0,
+        bowlingscore: 0,
+        ballsplayed: [],
+        centurybonus: 0,
+        halfcenturybonus: 0,
+        runsbonus: 0,
+        wickets: 0,
+        caughts: 0,
+        Maidenbonus: 0,
+        playerscore: 0,
+      };
     }
-//   }
+  } else {
+    if (!mainmatch_obj[otherinnings_key].playersscores.hasOwnProperty(bowler)) {
+      mainmatch_obj[otherinnings_key].playersscores[bowler] = {
+        id: "",
+        battingscore: 0,
+        fieldingscore: 0,
+        bowlingscore: 0,
+        ballsplayed: [],
+        centurybonus: 0,
+        halfcenturybonus: 0,
+        runsbonus: 0,
+        wickets: 0,
+        caughts: 0,
+        Maidenbonus: 0,
+        playerscore: 0,
+      };
+    }
+  }
+  //   }
   let battingruns = 0;
   let bowlingpoints = 0;
   let fieldingpoints = 0;
   if (isWicketDelivery) {
     if (
-      mainmatch_obj[inningskey][playerobj.Player].battingscore === 0 &&
+      mainmatch_obj[inningskey].playersscores[playerobj.Player].battingscore === 0 &&
       ["BATTER", "ALL-ROUNDER", "WICKETKEEPER"].includes(playerobj?.Role)
     ) {
       battingruns = -2;
@@ -169,7 +177,7 @@ const matches_score_analysis = async ({
       }
     }
   } else if (non_boundary === 1) {
-  /**Boundary bonuses */
+    /**Boundary bonuses */
     battingruns = extras_run
       ? total_run - extras_run === 6
         ? total_run + 3
@@ -181,80 +189,154 @@ const matches_score_analysis = async ({
     battingruns = total_run;
   }
   if (
-    mainmatch_obj[inningskey][playerobj.Player].battingscore >= 100 &&
-    !mainmatch_obj[inningskey][playerobj.Player].centurybonus
+    mainmatch_obj[inningskey].playersscores[playerobj.Player].battingscore >= 100 &&
+    !mainmatch_obj[inningskey].playersscores[playerobj.Player].centurybonus
   ) {
     battingruns += 16;
+    mainmatch_obj[inningskey].playersscores[playerobj.Player].centurybonus = 1;
   } else if (
-    mainmatch_obj[inningskey][playerobj.Player].battingscore >= 50 &&
-    !mainmatch_obj[inningskey][playerobj.Player].halfcenturybonus
+    mainmatch_obj[inningskey].playersscores[playerobj.Player].battingscore >= 50 &&
+    !mainmatch_obj[inningskey].playersscores[playerobj.Player].halfcenturybonus
   ) {
     battingruns += 8;
+    mainmatch_obj[inningskey].playersscores[playerobj.Player].halfcenturybonus = 1;
   } else if (
-    mainmatch_obj[inningskey][playerobj.Player].battingscore >= 30 &&
-    !mainmatch_obj[inningskey][playerobj.Player].runsbonus
+    mainmatch_obj[inningskey].playersscores[playerobj.Player].battingscore >= 30 &&
+    !mainmatch_obj[inningskey].playersscores[playerobj.Player].runsbonus
   ) {
     battingruns += 4;
+    mainmatch_obj[inningskey].playersscores[playerobj.Player].runsbonus = 1;
   }
   /**Maidin over checkcing */
-  if(total_run >0){
-    if(ballnumber ===  1){
-        mainmatch_obj[otherinnings_key].prev_bowler = bowler;
+  if (total_run > 0) {
+    if (ballnumber === 1) {
+      mainmatch_obj[otherinnings_key].prev_bowler = bowler;
+      mainmatch_obj[otherinnings_key].bowlers_inover = 1;
+      mainmatch_obj[otherinnings_key].overscore = total_run;
+    } else if (
+      ballnumber !== 1 &&
+      mainmatch_obj[otherinnings_key].prev_bowler !== bowler
+    ) {
+      mainmatch_obj[otherinnings_key].prev_bowler = bowler;
+      mainmatch_obj[otherinnings_key].bowlers_inover = 2;
+      mainmatch_obj[otherinnings_key].overscore = total_run;
+    } else if (
+      ballnumber !== 1 &&
+      mainmatch_obj[otherinnings_key].prev_bowler === bowler
+    ) {
+      if (
+        ballnumber === 6 &&
+        mainmatch_obj[otherinnings_key].bowlers_inover === 1
+      ) {
+        mainmatch_obj[otherinnings_key].playersscores[bowler].Maidenbonus += 12;
+        mainmatch_obj[otherinnings_key].playersscores[bowler].playerscore += 12; //maiden bonus
+      } else if (
+        ballnumber === 6 &&
+        mainmatch_obj[otherinnings_key].bowlers_inover === 2
+      ) {
+        mainmatch_obj[otherinnings_key].overscore = 0;
         mainmatch_obj[otherinnings_key].bowlers_inover = 1;
-        mainmatch_obj[otherinnings_key].overscore = total_run;
+        mainmatch_obj[otherinnings_key].prev_bowler = "";
+      } else {
+        mainmatch_obj[otherinnings_key].overscore += total_run;
+      }
     }
-    else if(ballnumber !== 1 && mainmatch_obj[otherinnings_key].prev_bowler !== bowler){
-        mainmatch_obj[otherinnings_key].prev_bowler = bowler;
-        mainmatch_obj[otherinnings_key].bowlers_inover = 2;
-        mainmatch_obj[otherinnings_key].overscore = total_run;
-    }
-    else if(ballnumber !== 1 && mainmatch_obj[otherinnings_key].prev_bowler === bowler){
-
-        if(ballnumber === 6 && mainmatch_obj[otherinnings_key].bowlers_inover===1){
-            mainmatch_obj[otherinnings_key][bowler].Maidenbonus+=12;
-            mainmatch_obj[otherinnings_key][bowler].playerscore += 12;//maiden bonus
-        }
-        else if(ballnumber === 6 && mainmatch_obj[otherinnings_key].bowlers_inover===2){
-            mainmatch_obj[otherinnings_key].overscore =0;
-            mainmatch_obj[otherinnings_key].bowlers_inover = 1;
-            mainmatch_obj[otherinnings_key].prev_bowler = "";
-        }
-        else{
-            mainmatch_obj[otherinnings_key].overscore += total_run;
-        }
-
-    }
-   
   }
   if (isWicketDelivery) {
-    if (mainmatch_obj[otherinnings_key][bowler].wickets === 3) {
+    if (mainmatch_obj[otherinnings_key].playersscores[bowler].wickets === 3) {
       bowlingpoints += 4;
-    } else if (mainmatch_obj[otherinnings_key][bowler].wickets === 4) {
+    } else if (mainmatch_obj[otherinnings_key].playersscores[bowler].wickets === 4) {
       bowlingpoints += 8;
-    } else if (mainmatch_obj[otherinnings_key][bowler].wickets === 5) {
+    } else if (mainmatch_obj[otherinnings_key].playersscores[bowler].wickets === 5) {
       bowlingpoints += 16;
     }
     if (fielders_involved !== "NA") {
-      mainmatch_obj[otherinnings_key][fielders_involved].fieldingscore +=
+      mainmatch_obj[otherinnings_key].playersscores[fielders_involved].fieldingscore +=
         fieldingpoints;
+      mainmatch_obj[otherinnings_key].playersscores[fielders_involved].playerscore +=
+        fieldingpoints;
+      mainmatch_obj[otherinnings_key].total += fieldingpoints;
       if (kind === "caught") {
-        mainmatch_obj[otherinnings_key][fielders_involved].caughts += 1;
+        mainmatch_obj[otherinnings_key].playersscores[fielders_involved].caughts += 1;
       }
     }
-    mainmatch_obj[otherinnings_key][bowler].bowlingscore += bowlingpoints;
+    mainmatch_obj[otherinnings_key].playersscores[bowler].playerscore += bowlingpoints;
+    mainmatch_obj[otherinnings_key].total += bowlingpoints;
+    mainmatch_obj[otherinnings_key].playersscores[bowler].bowlingscore += bowlingpoints;
   }
   /**Adding 2x runs for captain and 1.5 runs for vice-captain */
-  let total_team_score = battingruns + bowlingpoints + fieldingpoints;
-//   total_team_score = playerobj.type === "captain" ? total_team_score*2:playerobj.type === "vicecaptain" ? total_team_score*1.5:total_team_score;
-  mainmatch_obj[inningskey][playerobj.Player].battingscore += battingruns;
-  mainmatch_obj[inningskey][playerobj.Player].ballsplayed.push(scoreobj);
-  mainmatch_obj[inningskey][playerobj.Player].playerscore += total_team_score
-//   mainmatch_obj[inningskey].total += total_team_score;
-  return mainmatch_obj
+  let total_team_score = battingruns;
+
+  total_team_score =
+    playerobj.type === "captain"
+      ? total_team_score * 2
+      : playerobj.type === "vicecaptain"
+      ? total_team_score * 1.5
+      : total_team_score;
+
+  mainmatch_obj[inningskey].playersscores[playerobj.Player].battingscore += battingruns;
+  mainmatch_obj[inningskey].playersscores[playerobj.Player].ballsplayed.push(scoreobj);
+  mainmatch_obj[inningskey].playersscores[playerobj.Player].playerscore += total_team_score;
+  mainmatch_obj[inningskey].total += total_team_score;
+  return mainmatch_obj;
 };
+
+
+/**
+ * 
+ * @param {array} results 
+ * @returns object
+ */
+const display_match_results = async (results) => {
+  let display_obj = { match: "CSKvRR 2022", winners: [], runners: {} };
+
+  for (let result of results) {
+    let winners_players = [];
+    let runners_players = [];
+
+    for (let player in result.Firstinnings.playersscores) {
+      if (result.Firstinnings.playersscores.hasOwnProperty(player)) {
+        winners_players.push({ name: player, scored: result.Firstinnings.playersscores[player].playerscore });
+      }
+    }
+
+    for (let player in result.Secondinnings.playersscores) {
+      if (result.Secondinnings.playersscores.hasOwnProperty(player)) {
+        runners_players.push({ name: player, scored: result.Secondinnings.playersscores[player].playerscore });
+      }
+    }
+
+    let winner_obj = {
+      teamname: result.Firstinnings.teamname,
+      score: result.Firstinnings.total,
+      playersscores: winners_players
+    };
+
+    let runner_obj = {
+      teamname: result.Secondinnings.teamname,
+      score: result.Secondinnings.total,
+      playersscores: runners_players
+    };
+
+    if (result.Firstinnings.total > result.Secondinnings.total) {
+      display_obj.winners = [winner_obj];
+      display_obj.runners = runner_obj;
+    } else if (result.Firstinnings.total < result.Secondinnings.total) {
+      display_obj.winners = [runner_obj];
+      display_obj.runners = winner_obj;
+    } else {
+      display_obj.winners = [winner_obj, runner_obj];
+      display_obj.runners = {};
+    }
+  }
+
+  return display_obj;
+};
+
 
 module.exports = {
   add_teammembers_helper,
   checkMaxPlayersPerTeam,
   matches_score_analysis,
+  display_match_results,
 };

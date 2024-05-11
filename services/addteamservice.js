@@ -1,27 +1,54 @@
-// const  mongoconnection  = require("../database/mongoconnection");
-// const {db}=require('../index')
 const { connectdb } = require("../database/mongoconnection");
-const { add_teammembers_helper, checkMaxPlayersPerTeam } = require("../utils/helpers/helperfunctions");
+const {
+  add_teammembers_helper,
+  checkMaxPlayersPerTeam,
+} = require("../utils/helpers/helperfunctions");
 
 const addteamservice = {
-    /**
-     * 
-     * @param {object} payload 
-     * @returns json object
-     */
+  /**
+   *
+   * @param {object} payload
+   * @returns json object
+   */
   addteammembers: async (payload) => {
     try {
-      console.log("dajkfsdf")
       const { teamname, players, vicecaptain, captain } = payload;
       let all_players = [...players, vicecaptain, captain];
+      let roles_count = all_players.reduce(
+        (acc, curr) => {
+          acc[curr.Role] += 1;
+          return acc;
+        },
+        { "WICKETKEEPER": 0, "BATTER": 0, "ALL-ROUNDER": 0, "BOWLER": 0 }
+      );
+      // Check if all roles have at least 1 player
+      for (let role in roles_count) {
+        if (roles_count[role] < 1) {
+          return {
+            status: 0,
+            message: `Error: ${role} must have at least 1 player.`,
+            data: {},
+          };
+        }
+      }
+
+      // Check if all roles have at most 8 players
+      for (let role in roles_count) {
+        if (roles_count[role] > 8) {
+          return {
+            status: 0,
+            message: `Error: ${role} cannot have more than 8 players.`,
+            data: {},
+          };
+        }
+      }
       /**Maximum players check */
       const teams_check = await checkMaxPlayersPerTeam(all_players);
       if (teams_check.length > 0) {
         return {
           statu: 0,
           message: "Max players per team reached",
-          data: {
-          },
+          data: {},
         };
       }
       /**Captain duplication checking */
@@ -94,19 +121,31 @@ const addteamservice = {
       const registered_team = {
         TeamName: teamname,
         Players: teamsmember_res.playersObj,
-        Captain:{id: teamsmember_res.captainObj._id,Player:teamsmember_res.captainObj.Player,Role:teamsmember_res.captainObj.Role,type:"captain"},
-        ViceCaptain: {id:teamsmember_res.viceCaptainObj._id,Player:teamsmember_res.viceCaptainObj.Player,Role:teamsmember_res.viceCaptainObj.Role,type:"vicecaptain"},
+        Captain: {
+          id: teamsmember_res.captainObj._id,
+          Player: teamsmember_res.captainObj.Player,
+          Role: teamsmember_res.captainObj.Role,
+          type: "captain",
+        },
+        ViceCaptain: {
+          id: teamsmember_res.viceCaptainObj._id,
+          Player: teamsmember_res.viceCaptainObj.Player,
+          Role: teamsmember_res.viceCaptainObj.Role,
+          type: "vicecaptain",
+        },
       };
       // Check if the team name already exists in the collection
-        const existingTeam =await db.collection("teams").findOne({ TeamName: teamname });
-        if(existingTeam){
-            return {
-                statu: 0,
-                message: "Team name already exists",
-                data: {
-                },
-              };
-        }
+      const existingTeam = await db
+        .collection("teams")
+        .findOne({ TeamName: teamname });
+      if (existingTeam) {
+        
+        return {
+          statu: 0,
+          message: "Team name already exists",
+          data: {},
+        };
+      }
       const teamcollection = db.collection("teams").insertOne(registered_team);
 
       return {
